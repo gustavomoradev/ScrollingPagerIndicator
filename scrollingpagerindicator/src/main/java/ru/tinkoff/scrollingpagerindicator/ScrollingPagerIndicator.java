@@ -4,6 +4,7 @@ import android.animation.ArgbEvaluator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -36,6 +37,10 @@ public class ScrollingPagerIndicator extends View {
     private int visibleDotCount;
     private int visibleDotThreshold;
     private int orientation;
+
+    @ColorInt
+    private int strokeColor;
+    private int strokeSize;
 
     private float visibleFramePosition;
     private float visibleFrameWidth;
@@ -80,6 +85,9 @@ public class ScrollingPagerIndicator extends View {
         dotSelectedSize = attributes.getDimensionPixelSize(R.styleable.ScrollingPagerIndicator_spi_dotSelectedSize, 0);
         int dotMinimumSize = attributes.getDimensionPixelSize(R.styleable.ScrollingPagerIndicator_spi_dotMinimumSize, -1);
         this.dotMinimumSize = dotMinimumSize <= dotNormalSize ? dotMinimumSize : -1;
+
+        this.strokeColor = attributes.getColor(R.styleable.ScrollingPagerIndicator_spi_dotStrokeColor, 0);
+        this.strokeSize = attributes.getDimensionPixelOffset(R.styleable.ScrollingPagerIndicator_spi_dotStrokeSize, -1);
 
         spaceBetweenDotCenters = attributes.getDimensionPixelSize(R.styleable.ScrollingPagerIndicator_spi_dotSpacing, 0) + dotNormalSize;
         looped = attributes.getBoolean(R.styleable.ScrollingPagerIndicator_spi_looped, false);
@@ -536,17 +544,37 @@ public class ScrollingPagerIndicator extends View {
                     }
                 }
 
+                paint.setStyle(Paint.Style.FILL);
                 paint.setColor(calculateDotColor(scale));
+
                 if (orientation == LinearLayoutManager.HORIZONTAL) {
                     canvas.drawCircle(dot - visibleFramePosition,
                             getMeasuredHeight() / 2,
-                            diameter / 2,
+                            (diameter / 2) /*- 1.2f*/,
                             paint);
+
                 } else {
                     canvas.drawCircle(getMeasuredWidth() / 2,
                             dot - visibleFramePosition,
-                            diameter / 2,
+                            (diameter / 2)/*- 1.2f*/,
                             paint);
+                }
+
+                if(strokeSize != -1) {
+                    paint.setStyle(Paint.Style.STROKE);
+                    paint.setStrokeWidth(strokeSize);
+                    paint.setColor(strokeColor);
+                    if (orientation == LinearLayoutManager.HORIZONTAL) {
+                        canvas.drawCircle((dot - visibleFramePosition),
+                                getMeasuredHeight() / 2,
+                                (diameter / 2) - strokeSize,
+                                paint);
+                    } else {
+                        canvas.drawCircle(getMeasuredWidth() / 2,
+                                dot - visibleFramePosition,
+                                (diameter / 2) - 1.2f,
+                                paint);
+                    }
                 }
             }
         }
